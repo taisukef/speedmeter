@@ -22,7 +22,7 @@ window.onload = function() {
 		m = 5;
 		s = 15;
 		*/
-		var ss = fixnum(m, 2) + ":" + fixnum(s, 2) + " " + (speed ? speed : "-m/m") + " " + (odd >> 0) + "m ac:" + (ac ? fixfloat(ac, 1) : "-");
+		var ss = fixnum(m, 2) + ":" + fixnum(s, 2) + " " + (speed ? speed : "-m/m") + " " + (odd >> 0) + "m ac:" + (ac ? fixfloat(ac, 0) : "-");
 		var fonth = fitText(main, ss);
 		main.style.paddingTop = (window.innerHeight - fonth) + "px";
 	};
@@ -50,19 +50,21 @@ window.onload = function() {
 		readonly attribute double? speed; // meters per second (非対応時 null)
 		*/
 		var crd = pos.coords;
-		speed = crd.speed;
-		if (speed) {
+		var spd = crd.speed;
+		if (spd) {
 //			speed = fixfloat(speeed * 60 * 60 / 1000, 1) + "km/h";
-			speed = fixfloat(speeed * 60, 1) + "m/m";
+			speed = fixfloat(spd * 60, 1) + "m/m";
 		} else {
 			speed = "-m/m";
 		}
 		ac = crd.accuracy;
-		if (bklat) {
-			odd += getDistance(bklat, bklng, crd.latitude, crd.longitude) * 1000;
+		if (crd.latitude && ac && ac <= 10) {
+			if (bklat) {
+				odd += getDistance(bklat, bklng, crd.latitude, crd.longitude) * 1000;
+			}
+			bklat = crd.latitude;
+			bklng = crd.longitude;
 		}
-		bklat = crd.latitude;
-		bklng = crd.longitude;
 	}, null, { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 });
 	var bklat, bklng;
 	
