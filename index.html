@@ -1,0 +1,154 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>speedmeter</title>
+<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/><!-- default / black / black-translucent -->
+<meta name="format-detection" content="telephone=no"/>
+<link rel="apple-touch-icon" href="speedmeter.png"/>
+<meta property="og:image" content="speedmeter.png">
+<script src="fukuno.js"></script>
+<script>"use strict";
+window.onload = function() {
+	var main = get("main");
+	var f = function() {
+		var t = new Date().getTime();
+		var n = t - st;
+//		var h = n / (1000 * 60 * 60) >> 0;
+		var m = n / (1000 * 60) >> 0;
+		var s = ((n / 1000) >> 0) % 60;
+		var ms = (n % 1000 / 10) >> 0;
+		/*
+		h = 10;
+		m = 5;
+		s = 15;
+		*/
+		var ss = fixnum(m, 2) + ":" + fixnum(s, 2) + " " + (speed ? speed : "-m/m") + " " + (odd >> 0) + "m ac:" + (ac ? fixfloat(ac, 1) : "-");
+		var fonth = fitText(main, ss);
+		main.style.paddingTop = (window.innerHeight - fonth) + "px";
+	};
+	var st = new Date().getTime();
+	var odd = 0;
+	var speed = null;
+	var ac = null;
+	setInterval(f, 100);
+	
+	var resizeHeight = function() {
+		var h = window.innerHeight;
+		main.style.height = (h + 1) + "px";
+	};
+	window.addEventListener("resize", resizeHeight, false);
+	resizeHeight();
+	
+	var gpst = navigator.geolocation.watchPosition(function(pos) {
+		/*
+		readonly attribute double latitude;
+		readonly attribute double longitude;
+		readonly attribute double? altitude;
+		readonly attribute double accuracy;
+		readonly attribute double? altitudeAccuracy;
+		readonly attribute double? heading;
+		readonly attribute double? speed; // meters per second (非対応時 null)
+		*/
+		var crd = pos.coords;
+		speed = crd.speed;
+		if (speed) {
+//			speed = fixfloat(speeed * 60 * 60 / 1000, 1) + "km/h";
+			speed = fixfloat(speeed * 60, 1) + "m/m";
+		} else {
+			speed = "-m/m";
+		}
+		ac = crd.accuracy;
+		if (bklat) {
+			odd += getDistance(bklat, bklng, crd.latitude, crd.longitude) * 1000;
+		}
+		bklat = crd.latitude;
+		bklng = crd.longitude;
+	}, null, { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 });
+	var bklat, bklng;
+	
+	get("main").onclick = function() {
+		if (confirm("reset?")) {
+			st = new Date().getTime();
+			odd = 0;
+		}
+	};
+//	alert(getDistance(35.943415, 136.188777, 35.948453, 136.181033)); // 鯖江駅から西山公園 900mくらい
+};
+var fitText = function(comp, s) {
+	var w = comp.offsetWidth;
+	var h = comp.offsetHeight;
+	
+	var span = get("dummy");
+	document.body.appendChild(span);
+	var font = 10;
+	for (var i = 0; i < 1000; i++) {
+		span.textContent = s;
+		span.style.fontSize = font + "px";
+		var w2 = span.offsetWidth;
+		var h2 = span.offsetHeight;
+//		debug(w + " " + w2);
+		if (w2 < w && h2 < h + 200) {
+			font += 10;
+		} else {
+			font -= 10;
+			break;
+		}
+	}
+	comp.style.fontSize = font + "px";
+	comp.textContent = s;
+	return font;
+};
+var stringWidth = function(s) {
+	var span = create("span", "dummy");
+	span.textContent = s;
+	var w = span.offsetWidth;
+	return w;
+};
+var getDistance = function(lat1, lng1, lat2, lng2) { // km
+	var dlat = (lat2 - lat1) * Math.PI / 180;
+	var dlng = (lng2 - lng1) * Math.PI / 180;
+	var a = Math.sin(dlat / 2) * Math.sin(dlat / 2)
+		+ Math.cos(lat1 * Math.PI / 180)
+		* Math.cos(lat2 * Math.PI / 180)
+		* Math.sin(dlng / 2) * Math.sin(dlng / 2);
+	return 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 6371; // 6371 = R of the Earth in km
+};
+</script>
+<style>
+body {
+	margin: 0px;
+}
+#main {
+	text-align: center;
+	height: 400px;
+	x-line-height: 400px;
+	background: black;
+	color: white;
+	font-familiy: monospace;
+	box-sizing: border-box;
+}
+#dummy {
+	position: absolute;
+	visibility: hidden;
+}
+.credit {
+	margin: 1em;
+}
+a {
+	color: gray !important;
+}
+</style>
+</head>
+<body>
+
+<div id="main"></div>
+<span id="dummy"></span>
+
+<div class=credit>
+<h1>speedmeter</h1>
+APP: CC BY <a href=http://fukuno.jig.jp/1735 target=_blank>Taisuke Fukuno / Create Every Day / 一日一創</a><br>
+</div>
+
+
+</body>
+</html>
