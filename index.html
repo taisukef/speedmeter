@@ -22,13 +22,14 @@ window.onload = function() {
 		m = 5;
 		s = 15;
 		*/
-		var ss = fixnum(m, 2) + ":" + fixnum(s, 2) + " " + (speed ? speed : "-m/m") + " " + (odd >> 0) + "m ac:" + (ac ? fixfloat(ac, 0) : "-");
+		var ss = fixnum(m, 2) + ":" + fixnum(s, 2) + " " + speed + " " + (odd >> 0) + "m";
+		// ss += " ac:" + (ac ? fixfloat(ac, 0) : "-");
 		var fonth = fitText(main, ss);
 		main.style.paddingTop = (window.innerHeight - fonth) + "px";
 	};
 	var st = new Date().getTime();
 	var odd = 0;
-	var speed = null;
+	var speed = "-km/h";
 	var ac = null;
 	setInterval(f, 100);
 	
@@ -52,10 +53,11 @@ window.onload = function() {
 		var crd = pos.coords;
 		var spd = crd.speed;
 		if (spd) {
-//			speed = fixfloat(speeed * 60 * 60 / 1000, 1) + "km/h";
-			speed = fixfloat(spd * 60, 1) + "m/m";
+			speed = fixfloat(speeed * 60 * 60 / 1000, 1) + "km/h";
+//			speed = fixfloat(spd * 60, 1) + "m/m";
 		} else {
-			speed = "-m/m";
+//			speed = "-m/m";
+			speed = "-km/h";
 		}
 		ac = crd.accuracy;
 		if (crd.latitude && ac && ac <= 10) {
